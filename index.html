@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>13×2 Kamasutra Cipher</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap"
+      rel="stylesheet"
+    />
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      .switch {
+        position: relative;
+        display: inline-block;
+        width: 60px;
+        height: 34px;
+      }
+      .switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+      }
+      .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #ccc;
+        transition: 0.4s;
+        border-radius: 34px;
+      }
+      .slider:before {
+        position: absolute;
+        content: "";
+        height: 26px;
+        width: 26px;
+        left: 4px;
+        bottom: 4px;
+        background-color: white;
+        transition: 0.4s;
+        border-radius: 50%;
+      }
+      input:checked + .slider {
+        background-color: #4caf50;
+      }
+      input:checked + .slider:before {
+        transform: translateX(26px);
+      }
+
+      .poppins-regular {
+        font-family: "Poppins", sans-serif;
+        font-weight: 400;
+        font-style: normal;
+      }
+    </style>
+  </head>
+  <body
+    class="flex items-center justify-center h-screen bg-gray-100 poppins-regular"
+  >
+    <div class="bg-white rounded-lg shadow-lg p-8 w-full max-w-md">
+      <h1 class="text-2xl font-bold text-center mb-6 text-indigo-700 uppercase">
+        Ikinamada
+      </h1>
+
+      <div class="mb-4">
+        <label for="key" class="block text-sm font-medium text-gray-700 mb-1"
+          >Enter Key:</label
+        >
+        <input
+          type="text"
+          id="key"
+          name="key"
+          class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          placeholder="Your key"
+        />
+      </div>
+
+      <div class="mb-4">
+        <label for="text" class="block text-sm font-medium text-gray-700 mb-1"
+          >Text:</label
+        >
+        <textarea
+          id="text"
+          name="text"
+          rows="3"
+          class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          placeholder="Enter text to encrypt/decrypt"
+        ></textarea>
+      </div>
+
+      <div class="flex items-center justify-between mb-6">
+        <button
+          id="submitBtn"
+          class="bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2 px-4 rounded-md transition duration-150"
+        >
+          Encrypt / Decrypt
+        </button>
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1"
+          >Result:</label
+        >
+        <div
+          id="result"
+          class="min-h-12 p-3 bg-gray-50 border border-gray-200 rounded-md text-gray-800"
+        >
+          Result appears here...
+        </div>
+      </div>
+    </div>
+
+    <script>
+      $(document).ready(function () {
+        let cipherMap = {};
+
+        // Generate 13×2 cipher map from key
+        function generateCipherMap(key) {
+          const cleanKey = key.toLowerCase().replace(/[^a-z]/g, "");
+          const uniqueKeyLetters = [...new Set(cleanKey.split(""))];
+
+          const remainingLetters = "abcdefghijklmnopqrstuvwxyz"
+            .split("")
+            .filter((c) => !uniqueKeyLetters.includes(c));
+
+          // First 13 letters: key letters + remaining letters (until 13)
+          const first13 = uniqueKeyLetters
+            .concat(remainingLetters)
+            .slice(0, 13);
+
+          // Last 13 letters: remaining letters (after first 13)
+          const last13 = "abcdefghijklmnopqrstuvwxyz"
+            .split("")
+            .filter((c) => !first13.includes(c))
+            .slice(0, 13);
+
+          // Create mapping
+          const map = {};
+          for (let i = 0; i < 13; i++) {
+            map[first13[i]] = last13[i];
+            map[last13[i]] = first13[i];
+          }
+
+          return map;
+        }
+
+        // Encrypt/decrypt text
+        function processText(text, map) {
+          return text
+            .split("")
+            .map((char) => {
+              const lowerChar = char.toLowerCase();
+              if (map[lowerChar]) {
+                const result = map[lowerChar];
+                return char === char.toUpperCase()
+                  ? result.toUpperCase()
+                  : result;
+              }
+              return char;
+            })
+            .join("");
+        }
+
+        // Handle encryption/decryption
+        $("#submitBtn").click(function () {
+          const key = $("#key").val();
+          const text = $("#text").val();
+
+          if (!key) {
+            $("#result").html(
+              '<span class="text-red-500">Please enter a key</span>'
+            );
+            return;
+          }
+
+          if (!text) {
+            $("#result").html(
+              '<span class="text-red-500">Please enter text</span>'
+            );
+            return;
+          }
+
+          cipherMap = generateCipherMap(key);
+          const result = processText(text, cipherMap);
+          $("#result").text(result);
+
+          // Toggle mode after encryption
+        });
+
+        updateUI();
+      });
+    </script>
+  </body>
+</html>
